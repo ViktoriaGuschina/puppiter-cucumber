@@ -1,0 +1,26 @@
+{
+  "name": "jsaqa_3_4",
+  "version": "1.0.0",
+  "description": "jest,netology",
+  "main": "index.js",
+  "scripts": {
+    "test": "jest --runInBand",
+    "cucumber": "cucumber-js",
+    "cucumber2": "cucumber-js --tags=@only"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/ViktoriaGuschina/puppiter-cucumber.git"
+  },
+  "author": "Victoria Vashurina",
+  "license": "ISC",
+  "devDependencies": {
+    "jest": "^29.7.0",
+    "jest-puppeteer": "^11.0.0",
+    "puppeteer": "^24.7.2"
+  },
+  "dependencies": {
+    "chai": "^5.2.0",
+    "cucumber": "^6.0.7"
+  }
+}
