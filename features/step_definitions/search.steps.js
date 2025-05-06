@@ -21,7 +21,7 @@ After(async function () {
 
   Given('user opened the movie schedule page', async function () {
   await this.page.goto('https://qamid.tmweb.ru/client/index.php');
-  
+
 });
 
   When('user selects Thursday and a movie', async function () {
@@ -51,10 +51,11 @@ After(async function () {
   });
   
 
-  Then('user sees the text {string}', async function (string) {
-    const actualText = await getText(this.page, "ticket__check-title");
-    const expectedText = await string;
-    expect(actualText).contains(expectedText);
+  Then('the user should see an electronic ticket', async function () {
+    const expected = "Электронный билет";
+    const selectorTicket = ".ticket__check-title";
+    const actual = await getText(this.page, selectorTicket);
+    expect(actual).contains(expected);
   });
 
   When('user selects Friday and a movie', async function () {
@@ -89,6 +90,7 @@ After(async function () {
   When('the user returns to the booking page and selects the same Sunday and movie', async function () {
     await this.page.goto("https://qamid.tmweb.ru/client/index.php", { waitUntil: "networkidle2" });
     const cellSunday = "a:nth-child(7)";
+    const film3 = "a[href='#'][data-seance-id='225']";
     await clickElements(this.page, cellSunday);
     await clickElements(this.page, film3);
     });

@@ -5,7 +5,7 @@ Feature: ticket reservation
     And user selects an empty seat
     And user confirms the reservation
     And user clicks get the code
-    Then user sees the text "Электронный билет"
+    Then the user should see an electronic ticket
 
     Scenario: The user books a vip seat and receives an electronic ticket
     Given user opened the movie schedule page
@@ -13,7 +13,7 @@ Feature: ticket reservation
     And user selects an empty seat vip
     And user confirms the reservation
     And user clicks get the code
-    Then user sees the text "Электронный билет"
+    Then the user should see an electronic ticket
 
     Scenario: The user books a reserved chair VIP
     Given user opened the movie schedule page
@@ -21,6 +21,6 @@ Feature: ticket reservation
     And user selects an empty vip chair
     And user confirms the reservation
     And user clicks get the code
-    Then user sees the text "Электронный билет"
+    Then the user should see an electronic ticket
     When the user returns to the booking page and selects the same Sunday and movie
     Then the VIP chair should be disabled for reservation

@@ -65,8 +65,9 @@ describe("successful ticket booking", () => {
 
     test("booking a reserved chair VIP", async () => {
       const cellSunday = "a:nth-child(7)";
+      const film3 = "a[href='#'][data-seance-id='225']";
         await clickElements(page, cellSunday);
-        await clickElements(page, "a[href='#'][data-seance-id='225']");
+        await clickElements(page, film3);
         const chairVIP = await page.$("div:nth-child(9) span:nth-child(1)");
          if (chairVIP) {
             await chairVIP.click();
