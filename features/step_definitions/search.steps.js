@@ -1,105 +1,75 @@
-const puppeteer = require("puppeteer");
+const puppeteer = require('puppeteer');
+const { clickElements, getText, findAndClickFreeSeat } = require("../../lib/commands.js");
 const chai = require("chai");
 const expect = chai.expect;
-const { Given, When, Then, Before, After, setDefaultTimeout} = require("cucumber");
-const { clickElements, getText } = require("../../lib/commands.js");
+const { Given, When, Then, Before, After, setDefaultTimeout } = require("cucumber");
+
+let browser;
+let page;
 
 setDefaultTimeout(80000);
 
-Before(async function () {
-  const browser = await puppeteer.launch({ headless: false, slowMo: 50 });
-  const page = await browser.newPage();
-  this.browser = browser;
-  this.page = page;
+Before(async () => {
+  browser = await puppeteer.launch({ headless: false });
 });
 
-After(async function () {
-  if (this.browser) {
-    await this.browser.close();
+After(async () => {
+  await browser.close();
+});
+
+Given('user opened the movie schedule page', async () => {
+  page = await browser.newPage();
+  await page.goto("https://qamid.tmweb.ru/client/index.php", { waitUntil: "networkidle2" });
+  const expectedTitle = "Идёмвкино";
+  const actualTitle = await getText(page, ".page-header__title");
+  expect(actualTitle).to.equal(expectedTitle);
+
+});
+
+When('user selects the standard chair for the film', async () => {
+  const daySelector = "nav > a:nth-child(4)";
+  await clickElements(page, daySelector);
+  const filmSelector = ".movie-seances__time[href='#'][data-seance-id='217']";
+  await clickElements(page, filmSelector);
+  await findAndClickFreeSeat(page, ".buying-scheme__chair:not(.buying-scheme__chair_taken)");
+});
+
+When('user selects the VIP chair for the film', async () => {
+  const daySelector = "nav > a:nth-child(4)";
+  await clickElements(page, daySelector);
+  const filmSelectorVIP = ".movie-seances__time[href='#'][data-seance-id='198']";
+  await clickElements(page, filmSelectorVIP);
+  await findAndClickFreeSeat(page, ".buying-scheme__chair_vip:not(.buying-scheme__chair_taken)");
+});
+
+When('user reserves the chair', async () => {
+  const reserveButtonSelector = ".acceptin-button";
+  await page.waitForSelector(reserveButtonSelector);
+  await clickElements(page, reserveButtonSelector);
+  const confirmButtonSelector = '.acceptin-button';
+  await page.waitForSelector(confirmButtonSelector);
+  await clickElements(page, confirmButtonSelector);
+});
+
+Then('user should see the confirmation message {string}', async (expectedMessage) => {
+  const ticketConfirmationSelector = ".ticket__check-title";
+  const actualMessage = await getText(page, ticketConfirmationSelector);
+  expect(actualMessage).to.equal(expectedMessage);
+});
+
+When('user try to select an unavailable movie', async function () {
+  const selector = ".movie-seances__time.acceptin-button-disabled";
+  const buttonsToPress = await page.$$(selector);
+  if (!buttonsToPress || buttonsToPress.length === 0) {
+    throw new Error(`Did not find selector: ${selector}`);
   }
+  await buttonsToPress[0].click();
 });
 
-  Given('user opened the movie schedule page', async function () {
-  await this.page.goto('https://qamid.tmweb.ru/client/index.php');
-
+Then('user should remain on the movie selection page and see {string}', async function (expectedText) {
+  const actualText = await getText(
+    page,
+    "body main section:nth-child(1) div:nth-child(1) div:nth-child(2) h2:nth-child(1)"
+  );
+  expect(actualText).to.include(expectedText);
 });
-
-  When('user selects Thursday and a movie', async function () {
-  const cellThursday = "a:nth-child(4)";
-  await clickElements(this.page, cellThursday);
-  const film = ".movie-seances__time[href='#'][data-seance-id='217']";
-  await clickElements(this.page, film);
-});
-
-  When('user selects an empty seat', async function () {
-  const seat = await this.page.$("div.buying-scheme__wrapper div:nth-child(1) span:nth-child(1)");
-  if (seat) {
-    await seat.click();
-  } else {
-    throw new Error('Все места заняты');
-  }
-});
-
-  When('user confirms the reservation', async function () {
-  const reserveButton = ".acceptin-button";
-  await clickElements(this.page, reserveButton);
-
-});
-
-  When('user clicks get the code', async function () {
-    await clickElements(this.page, ".acceptin-button");
-  });
-  
-
-  Then('the user should see an electronic ticket', async function () {
-    const expected = "Электронный билет";
-    const selectorTicket = ".ticket__check-title";
-    const actual = await getText(this.page, selectorTicket);
-    expect(actual).contains(expected);
-  });
-
-  When('user selects Friday and a movie', async function () {
-    const cellFriday = "a:nth-child(5)";
-    await clickElements(this.page, cellFriday);
-    const film2 = ".movie-seances__time[href='#'][data-seance-id='198']";
-    await clickElements(this.page, film2);
-  });
-  
-  When('user selects an empty seat vip', async function () {
-    const seat2 = await this.page.$("div[class='buying-scheme__wrapper'] div:nth-child(1) span:nth-child(1)");
-    if (seat2) {
-      await seat2.click();
-    } else {
-      throw new Error('Все места заняты');
-    }});
-
-  When('user selects Sunday and a movie', async function () {
-    await clickElements(this.page, "a:nth-child(7)");
-    await clickElements(this.page,"a[href='#'][data-seance-id='225']");
-      });
-      
-  When('user selects an empty vip chair', async function () {
-    const seatSelector2 = "div:nth-child(9) span:nth-child(1)";
-    const seat2 = await this.page.$(seatSelector2);
-    if (seat2) {
-      await seat2.click();
-      } else {
-        throw new Error('Все места заняты');
-      }});
-
-  When('the user returns to the booking page and selects the same Sunday and movie', async function () {
-    await this.page.goto("https://qamid.tmweb.ru/client/index.php", { waitUntil: "networkidle2" });
-    const cellSunday = "a:nth-child(7)";
-    const film3 = "a[href='#'][data-seance-id='225']";
-    await clickElements(this.page, cellSunday);
-    await clickElements(this.page, film3);
-    });
-
-  Then('the VIP chair should be disabled for reservation', async function () {
-    const reservedChairVIP = await this.page.$("div:nth-child(9) span:nth-child(1)");
-    if (reservedChairVIP) {
-      await clickElements(this.page, reservedChairVIP);
-    }
-    const isDisabled = await this.page.$eval(".acceptin-button", button => button.disabled);
-    expect(isDisabled).to.equal(true);
-    });
